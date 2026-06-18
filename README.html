@@ -1,1 +1,401 @@
-# EDEN
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QCM Micrology Quiz</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .quiz-container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            font-size: 1.4rem;
+            line-height: 1.5;
+        }
+        .options-container {
+            margin-top: 20px;
+        }
+        .option-btn {
+            display: block;
+            width: 100%;
+            background-color: #f8f9fa;
+            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            text-align: left;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .option-btn:hover:not([disabled]) {
+            background-color: #e8f4fd;
+            border-color: #3498db;
+        }
+        .feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            display: none;
+            text-align: center;
+        }
+        .feedback.good {
+            display: block;
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .feedback.wrong {
+            display: block;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .next-btn {
+            display: block;
+            width: 100%;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px;
+            margin-top: 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: none;
+        }
+        .next-btn:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <div id="quiz-box">
+        <h2 id="question-text">Loading question...</h2>
+        <div class="options-container" id="options-box"></div>
+        <div class="feedback" id="feedback-box"></div>
+        <button class="next-btn" id="next-button" onclick="loadRandomQuestion()">Next Random Question</button>
+    </div>
+</div>
+
+<script>
+    // Full parsed dataset from "QCM Y2S1 Micrology Dr.docx"
+    const quizData = [
+        { q: "Q1. Which architectural component of a virion is directly responsible for anchoring to host cell receptors during the initial stages of infection?", a: ["Protein capsid", "Lipid envelope", "Capsomere matrix", "Spike projections"], correct: "Spike projections" },
+        { q: "Q2. A mature virus particle that is structurally complete and infectious is called:", a: ["Capsid", "Nucleocapsid", "Virion", "Viroid"], correct: "Virion" },
+        { q: "Q3. The lipid envelope is derived from:", a: ["De novo viral synthesis", "Modified host cell membranes during budding", "Host lipoproteins in blood", "Cytoskeleton breakdown"], correct: "Modified host cell membranes during budding" },
+        { q: "Q4. Which cannot serve as a viral genome?", a: ["ssRNA", "dsRNA", "DNA–RNA hybrid", "ssDNA"], correct: "DNA–RNA hybrid" },
+        { q: "Q5. Baltimore classification is based on:", a: ["Capsid symmetry", "mRNA synthesis and replication strategy", "Host range", "Drug sensitivity"], correct: "mRNA synthesis and replication strategy" },
+        { q: "Q6. Phase where no infectious virions are detectable after uncoating:", a: ["Eclipse phase", "Latent period", "Budding window", "Adsorption phase"], correct: "Eclipse phase" },
+        { q: "Q7. Function of polymerase in -ssRNA viruses:", a: ["Lipid synthesis", "Makes +mRNA from -RNA genome", "Splices host DNA", "Destroys host DNA"], correct: "Makes +mRNA from -RNA genome" },
+        { q: "Q8. Naked dsDNA icosahedral viruses include:", a: ["Herpesvirus & Parvovirus", "Adenovirus & Parvovirus", "Adenovirus & Herpesvirus", "Adenovirus only"], correct: "Adenovirus only" },
+        { q: "Q9. ssDNA virus belongs to:", a: ["Adenoviridae", "Herpesviridae", "Parvoviridae", "Poxviridae"], correct: "Parvoviridae" },
+        { q: "Q10. Layer beneath envelope is:", a: ["GlycocalyxB", "Protein capsid", "Peptidoglycan", "Lipoprotein layer"], correct: "Protein capsid" },
+        { q: "Q11. Enveloped viruses are:", a: ["Resistant to harsh conditions", "Sensitive to drying, heat, detergents, acid", "Resistant to detergents", "Resistant to proteases"], correct: "Sensitive to drying, heat, detergents, acid" },
+        { q: "Q12. Non-enveloped viruses are:", a: ["Sensitive to environmental stress", "Resistant to drying, heat, detergents, acid", "Only survive in humans", "Always enveloped"], correct: "Resistant to drying, heat, detergents, acid" },
+        { q: "Q13. Viruses depend on host for:", a: ["Cell wall only", "Mitochondria only", "Energy, ribosomes, mRNA machinery", "Lipid envelopes only"], correct: "Energy, ribosomes, mRNA machinery" },
+        { q: "Q14. Poliovirus vs Herpesvirus replication time:", a: ["Piovirus hours, Herpes days", "Poliovirus days, Herpes hours", "Both same", "Both weeks"], correct: "Piovirus hours, Herpes days" },
+        { q: "Q15. HIV attachment pair:", a: ["gp120–CD21", "gp360–CD4", "gp120–CD4", "gp41–sialic acid"], correct: "gp120–CD4" },
+        { q: "Q16. CD21 receptor virus:", a: ["Influenza", "HIV", "Poliovirus", "EBV"], correct: "EBV" },
+        { q: "Q17. Non-enveloped virus entry:", a: ["Fusion", "Endocytosis", "Budding", "Exocytosis"], correct: "Endocytosis" },
+        { q: "Q18. Fusion requires:", a: ["Capsid binding", "Envelope merging with membrane", "Cell wall destruction", "Nuclear transport"], correct: "Envelope merging with membrane" },
+        { q: "Q19. Decapsidation is:", a: ["Viral protein synthesis", "Genome release from capsid", "Envelope formation", "Receptor binding"], correct: "Genome release from capsid" },
+        { q: "Q20. DNA virus transcription/translation location:", a: ["Both cytoplasm", "Both nucleus", "Transcription nucleus, translation cytoplasm", "Reverse pattern"], correct: "Transcription nucleus, translation cytoplasm" },
+        { q: "Q21. Baltimore classification contains how many genome groups?", a: ["4", "5", "6", "7"], correct: "7" },
+        { q: "Q22. Assembly stage forms virus from:", a: ["Nucleic acid + proteins + envelope", "DNA + RNA + ribosomes", "Ligands + receptors", "Capsomeres only"], correct: "Nucleic acid + proteins + envelope" },
+        { q: "Q23. Difference in release:", a: ["Naked bud, enveloped lyse", "Both lyse", "Naked lyse, enveloped bud", "Both bud"], correct: "Naked lyse, enveloped bud" },
+        { q: "Q24. Transcription vs translation:", a: ["Protein → RNA / RNA → DNA", "RNA → DNA / DNA → RNA", "DNA/RNA → mRNA / mRNA → protein", "Protein → DNA / RNA → protein"], correct: "DNA/RNA → mRNA / mRNA → protein" },
+        { q: "Q25. Poxviridae replicate in:", a: ["Nucleus", "Cytoplasm", "Mitochondria", "Ribosomes"], correct: "Cytoplasm" },
+        { q: "Q26. Smallpox eradication was due to:", a: ["Animal reservoir", "Antigenic shift", "Humans are only reservoir", "Genome integration"], correct: "Humans are only reservoir" },
+        { q: "Q27. Best diagnosis for orthopoxvirus DNA:", a: ["Microscopy", "qPCR", "Agglutination", "Lipid test"], correct: "qPCR" },
+        { q: "Q28. Monkeypox hallmark sign:", a: ["Paralysis", "No fever", "Lymphadenopathy", "Liver inclusions"], correct: "Lymphadenopathy" },
+        { q: "Q29. Poxviridae are:", a: ["RNA enveloped fecal-oral", "RNA enveloped respiratory", "DNA enveloped fecal-oral", "DNA enveloped respiratory"], correct: "DNA enveloped respiratory" },
+        { q: "Q30. Picornaviridae are:", a: ["Enveloped dsRNA", "Non-enveloped +ssRNA", "Enveloped -ssRNA", "Enveloped DNA"], correct: "Non-enveloped +ssRNA" },
+        { q: "Q31. Herpangina caused by:", a: ["Hepatitis A", "Poliovirus", "Coxsackie A", "EBV"], correct: "Coxsackie A" },
+        { q: "Q32. Paralytic polio affects:", a: ["Sensory neurons", "Schwann cells", "Motor neurons anterior horn", "Oligodendrocytes"], correct: "Motor neurons anterior horn" },
+        { q: "Q33. Hepatitis A features:", a: ["DNA virus", "+ssRNA fecal-oral", "-ssRNA respiratory", "dsDNA blood"], correct: "+ssRNA fecal-oral" },
+        { q: "Q34. Polio progression order:", a: ["Asymptomatic → abortive → meningitis → paralysis → post-polio", "Paralysis first", "Meningitis first", "Random order"], correct: "Asymptomatic → abortive → meningitis → paralysis → post-polio" },
+        { q: "Q35. Outcome of poliovirus:", a: ["Encephalitis", "Poliomyelitis", "Eye infection", "Cardiac disease"], correct: "Poliomyelitis" },
+        { q: "Q36. EV71 is:", a: ["DNA enveloped", "RNA enveloped", "Non-enveloped +ssRNA", "dsDNA"], correct: "Non-enveloped +ssRNA" },
+        { q: "Q37. EV71 target cells:", a: ["Hepatocytes", "Neurons", "Muscle only", "Heart cells"], correct: "Neurons" },
+        { q: "Q38. HBV classification:", a: ["Picornavirus RNA", "Hepadnaviridae DNA enveloped", "Flavivirus RNA", "Herpes DNA"], correct: "Hepadnaviridae DNA enveloped" },
+        { q: "Q39. Fecal-oral hepatitis:", a: ["B and C", "B and D", "A and E", "C and E"], correct: "A and E" },
+        { q: "Q40. Chronic hepatitis defined at:", a: ["3 months", "6 months", "12 months", "5 years"], correct: "6 months" },
+        { q: "Q41. Non-hepatitis viruses that can damage liver include:", a: ["Herpes virus, Adenovirus, Coxsackievirus", "Poliovirus, Rotavirus", "Poxvirus, Influenza A", "Rabies virus, HIV-1"], correct: "Herpes virus, Adenovirus, Coxsackievirus" },
+        { q: "Q42. Recombinant vaccine antigen for Hepatitis B:", a: ["HBcAg", "HBeAg", "HBV RNA core", "HBsAg"], correct: "HBsAg" },
+        { q: "Q43. Marker confirming active Hepatitis C infection:", a: ["Total capsid proteins", "Anti-HBs", "HCV RNA", "Anti-HCV IgM only"], correct: "HCV RNA" },
+        { q: "Q44. Standard Hepatitis C treatment:", a: ["Tenofovir + Adefovir", "Entecavir + Telbivudine", "Vaccines + detox", "Pegylated interferon + Ribavirin"], correct: "Pegylated interferon + Ribavirin" },
+        { q: "Q45. Key difference HBV vs others:", a: ["Helical shape", "DNA virus (others RNA)", "No protein coat", "Kidney tropism"], correct: "DNA virus (others RNA)" },
+        { q: "Q46. Chronic hepatitis duration:", a: [">2 weeks", ">1 month", ">6 months", ">5 years"], correct: ">6 months" },
+        { q: "Q47. Fecal-oral hepatitis viruses:", a: ["B and C", "B and D", "A and E", "C and E"], correct: "A and E" },
+        { q: "Q48. No vaccine available for:", a: ["Hepatitis A", "Hepatitis B", "Hepatitis C", "Hepatitis E"], correct: "Hepatitis C" },
+        { q: "Q49. HBV vaccine antigen:", a: ["HBcAg", "HBeAg", "HBsAg", "HCV RNA"], correct: "HBsAg" },
+        { q: "Q50. HAV is:", a: ["Non-enveloped +ssRNA", "Enveloped DNA", "Enveloped +ssRNA", "Enveloped -ssRNA"], correct: "Non-enveloped +ssRNA" },
+        { q: "Q51. HBV is:", a: ["Non-enveloped +ssRNA", "Enveloped DNA", "Enveloped +ssRNA", "Enveloped -ssRNA"], correct: "Enveloped DNA" },
+        { q: "Q52. HCV is:", a: ["Non-enveloped +ssRNA", "Enveloped DNA", "Enveloped +ssRNA", "Enveloped -ssRNA"], correct: "Enveloped +ssRNA" },
+        { q: "Q53. HDV is:", a: ["Non-enveloped +ssRNA", "Enveloped DNA", "Enveloped +ssRNA", "Enveloped -ssRNA"], correct: "Enveloped +ssRNA" },
+        { q: "Q54. HEV is:", a: ["Non-enveloped +ssRNA", "Enveloped DNA", "Enveloped +ssRNA", "Enveloped -ssRNA"], correct: "Non-enveloped +ssRNA" },
+        { q: "Q55. HAV prevention:", a: ["Vaccination", "Screening", "Water control", "All of the above"], correct: "All of the above" },
+        { q: "Q56. HBV prevention:", a: ["Vaccination", "Screening", "Water control", "All of the above"], correct: "All of the above" },
+        { q: "Q57. HCV prevention:", a: ["Vaccination", "Screening", "Water control", "All of the above"], correct: "Screening" },
+        { q: "Q58. HDV prevention:", a: ["Vaccination", "Screening", "Water control", "All of the above"], correct: "Vaccination" },
+        { q: "Q59. HEV prevention:", a: ["Vaccination", "Screening", "Water control", "All of the above"], correct: "Water control" },
+        { q: "Q60. HAV transmission:", a: ["Blood", "Respiratory", "Fecal-oral", "Saliva"], correct: "Fecal-oral" },
+        { q: "Q61. HBV transmission:", a: ["Blood", "Respiratory", "Fecal-oral", "Saliva"], correct: "Blood" },
+        { q: "Q62. HCV transmission:", a: ["Blood", "Respiratory", "Fecal-oral", "Saliva"], correct: "Blood" },
+        { q: "Q63. HDV transmission:", a: ["Blood", "Respiratory", "Fecal-oral", "Saliva"], correct: "Blood" },
+        { q: "Q64. HEV transmission:", a: ["Blood", "Respiratory", "Fecal-oral", "Saliva"], correct: "Fecal-oral" },
+        { q: "Q65. HBV antigens include:", a: ["HBcAg", "HBsAg", "HBeAg", "All of the above"], correct: "All of the above" },
+        { q: "Q66. HBV diagnosis positive when:", a: ["HBsAg (-) anti-HBc (-)", "HBsAg (-) anti-HBc (+)", "HBsAg (+) anti-HBc (+)", "HBsAg (+) anti-HBc (-)"], correct: "HBsAg (+) anti-HBc (+)" },
+        { q: "Q67. HCV diagnosis positive when:", a: ["HBcAg positive", "Anti-HCV positive", "Anti-HBc positive", "HCV antigen positive"], correct: "Anti-HCV positive" },
+        { q: "Q68. Confirm active HCV infection requires:", a: ["Liver biopsy", "HCV RNA detection", "HAV stool culture", "Lipid panel"], correct: "HCV RNA detection" },
+        { q: "Q69. HIV belongs to:", a: ["Retroviridae, Lentivirus", "Picornaviridae, Enterovirus", "Flaviviridae, Hepacivirus", "Poxviridae, Orthopoxvirus"], correct: "Retroviridae, Lentivirus" },
+        { q: "Q70. Reverse transcriptase function:", a: ["Protein breakdown", "RNA → DNA", "Envelope formation", "Carbohydrate synthesis"], correct: "RNA → DNA" },
+        { q: "Q71. Majority HIV infected cells:", a: ["Monocytes", "Macrophages", "CD4 T lymphocytes", "Thrombocytes"], correct: "CD4 T lymphocytes" },
+        { q: "Q72. Main HIV transmission mode:", a: ["Blood transfusion", "Vertical", "Tattoos", "Sexual transmission"], correct: "Sexual transmission" },
+        { q: "Q73. ELISA detects:", a: ["p24 antigen", "HBsAg", "gp120", "gp360"], correct: "p24 antigen" },
+        { q: "Q74. AIDS stage CD4 count:", a: ["<500", "<350", "<200", "<50"], correct: "<200" },
+        { q: "Q75. HIV genome is:", a: ["DNA single strand", "Two identical ssRNA copies", "dsDNA circle", "dsRNA segments"], correct: "Two identical ssRNA copies" },
+        { q: "Q76. Acute HIV symptoms appear after:", a: ["2–3 days", "10–15 days", "6–12 months", "5–7 years"], correct: "10–15 days" },
+        { q: "Q77. Stade A HIV is:", a: ["Severe infections", "CD4 <50", "Chronic ulcers", "Asymptomatic or primary infection"], correct: "Asymptomatic or primary infection" },
+        { q: "Q78. HIV antibodies detectable after:", a: ["24–48 hours", "3–6 weeks", "6–12 months", "2 years"], correct: "3–6 weeks" },
+        { q: "Q79. Prevent vertical HIV transmission:", a: ["Artificial milk", "No vaccines", "Filter water", "Post-delivery screening"], correct: "Artificial milk" },
+        { q: "Q80. HIV blood profile shows:", a: ["Thrombocytosis + lymphocytosis", "Thrombocytosis + lymphocytopenia", "Thrombocytopenia + lymphocytopenia", "Thrombocytopenia + lymphocytosis"], correct: "Thrombocytopenia + lymphocytopenia" },
+        { q: "Q81. Dengue virus belongs to:", a: ["Flaviviridae, Flavivirus", "Picornaviridae, Hepatovirus", "Retroviridae, Lentivirus", "Hepeviridae, Hepevirus"], correct: "Flaviviridae, Flavivirus" },
+        { q: "Q82. Dengue virus has:", a: ["2 serotypes", "4 serotypes", "6 serotypes", "10 serotypes"], correct: "4 serotypes" },
+        { q: "Q83. Dengue vector is:", a: ["Anopheles", "Culex", "Aedes aegypti & Aedes albopictus", "Mansonia"], correct: "Aedes aegypti & Aedes albopictus" },
+        { q: "Q84. Secondary dengue infection risk:", a: ["Chronic hepatitis", "Paralysis", "Respiratory infection", "Dengue hemorrhagic fever / shock syndrome"], correct: "Dengue hemorrhagic fever / shock syndrome" },
+        { q: "Q85. Safe painkiller in dengue:", a: ["Ibuprofen", "Acetaminophen (paracetamol)", "Aspirin", "Naproxen"], correct: "Acetaminophen (paracetamol)" },
+        { q: "Q86. Best dengue prevention:", a: ["Antivirals", "Vaccine only", "Avoid mosquito bites + remove standing water", "Boiling water"], correct: "Avoid mosquito bites + remove standing water" },
+        { q: "Q87. Mosquito incubation period:", a: ["<24 hours", "1–2 days", "8–12 days", "2 months"], correct: "8–12 days" },
+        { q: "Q88. Dengue symptoms start after:", a: ["12–24 hours", "4–7 days", "3–4 weeks", "6 months"], correct: "4–7 days" },
+        { q: "Q89. Dengue NS1 positive means:", a: ["Recovery", "Active early infection", "Immunity", "Hepatitis infection"], correct: "Active early infection" },
+        { q: "Q90. Weekly mosquito breeding control:", a: ["Air filters", "Dry leaves", "Water containers & flower pots", "Soil only"], correct: "Water containers & flower pots" },
+        { q: "Q91. Dengue patient mosquito precaution is needed because:", a: ["Prevent malaria", "Mosquito spreads virus to others", "Fever control", "Prevent dehydration"], correct: "Mosquito spreads virus to others" },
+        { q: "Q92. Measles virus belongs to:", a: ["Flaviviridae", "Picornaviridae", "Paramyxoviridae", "Retroviridae"], correct: "Paramyxoviridae" },
+        { q: "Q93. Early measles mouth sign:", a: ["Black spots", "Vesicles", "Red tongue petechiae", "Koplik spots"], correct: "Koplik spots" },
+        { q: "Q94. Vitamin for measles complication reduction:", a: ["Vitamin C", "Vitamin B12", "Vitamin A", "Vitamin D"], correct: "Vitamin A" },
+        { q: "Q95. Rubella danger in pregnancy:", a: ["Liver cirrhosis", "Motor neuron loss", "T-cell destruction", "Congenital rubella syndrome"], correct: "Congenital rubella syndrome" },
+        { q: "Q96. Rubella key feature:", a: ["Nose bleeding", "High fever", "Lymph nodes swelling behind ear", "Hemorrhagic rash"], correct: "Lymph nodes swelling behind ear" },
+        { q: "Q97. Pregnancy delay after rubella vaccine:", a: ["24 hours", "7 days", "28 days", "6 months"], correct: "28 days" },
+        { q: "Q98. Measles symptom onset:", a: ["1–2 days", "8–12 days", "20–30 days", "6 months"], correct: "8–12 days" },
+        { q: "Q99. Measles rash spreads:", a: ["Head → downwards", "Feet → upwards", "Palms only", "Mouth only"], correct: "Head → downwards" },
+        { q: "Q100. Post-exposure immune globulin timing:", a: ["6 days", "30 days", "After rash", "12 weeks"], correct: "6 days" },
+        { q: "Q101. Rubella fever type:", a: ["No fever", "Low fever <39°C", ">41°C", "Cyclic fever"], correct: "Low fever <39°C" },
+        { q: "Q102. CRS complication:", a: ["Liver cirrhosis", "T-cell destruction", "Diabetes & thyroid dysfunction", "GI bleeding"], correct: "Diabetes & thyroid dysfunction" },
+        { q: "Q103. Virus is:", a: ["Prokaryote", "Budding form", "Eukaryote", "Non-cellular"], correct: "Non-cellular" },
+        { q: "Q104. Measles transmission:", a: ["Cough/sneezing", "Blood", "Fecal-oral", "Transfusion"], correct: "Cough/sneezing" },
+        { q: "Q105. Measles symptoms:", a: ["Fever", "Rash", "Photophobia", "All of the above"], correct: "All of the above" },
+        { q: "Q106. Measles complications:", a: ["Bronchitis", "Encephalitis", "Blindness", "All of the above"], correct: "All of the above" },
+        { q: "Q107. Rubella transmission:", a: ["Blood", "Cough/sneezing", "Fecal-oral", "Transfusion"], correct: "Cough/sneezing" },
+        { q: "Q108. Direct diagnosis detects:", a: ["Antibodies", "Virus only", "Nucleic acid / antigen / virus", "Nucleic acid only"], correct: "Nucleic acid / antigen / virus" },
+        { q: "Q109. Indirect diagnosis detects:", a: ["Antibodies", "Virus", "DNA", "Antigen only"], correct: "Antibodies" },
+        { q: "Q110. Nucleic acid detection method:", a: ["ELISA", "Electron microscope", "PCR", "Culture"], correct: "PCR" },
+        { q: "Q111. Antibody detection method:", a: ["ELISA", "PCR", "EM", "Culture"], correct: "ELISA" },
+        { q: "Q112. Antigen detection method:", a: ["ELISA", "PCR", "EM", "Culture"], correct: "ELISA" },
+        { q: "Q113. New virus detection method:", a: ["ELISA", "Electron microscope", "PCR", "Culture"], correct: "Electron microscope" },
+        { q: "Q114. Virus culture method:", a: ["ELISA", "Electron microscope", "PCR", "Cell culture"], correct: "Cell culture" },
+        { q: "Q115. Specimen collection phase:", a: ["Analysis", "Post-analysis", "Pre-analysis", "Evaluation"], correct: "Pre-analysis" },
+        { q: "Q116. Long-term storage temperature:", a: ["4°C", "-70 to -80°C", "0°C", "Room temp"], correct: "-70 to -80°C" },
+        { q: "Q117. Indirect diagnosis method:", a: ["Antibodies", "Virus particles", "DNA", "Antigen"], correct: "Antibodies" },
+        { q: "Q118. Electron microscopy disadvantage:", a: ["Cannot see viruses", "Only antibodies", "Needs animal host", "Expensive and low sensitivity"], correct: "Expensive and low sensitivity" },
+        { q: "Q119. Latex agglutination detects:", a: ["Influenza/HIV", "Rotavirus/Adenovirus", "Measles/Rubella", "HBV/HCV"], correct: "Rotavirus/Adenovirus" },
+        { q: "Q120. Cell culture damage effect:", a: ["Latex beads", "Fluorescence", "Color bands", "Syncytia"], correct: "Syncytia" },
+        { q: "Q121. In Direct ELISA, what is fixed on the solid surface first?", a: ["Enzyme substrate", "Patient antibodies", "Specific capture antibodies", "Fluorescent dyes"], correct: "Specific capture antibodies" },
+        { q: "Q122. What causes color change in ELISA?", a: ["Enzyme converts substrate into colored product", "Viral RNA replication", "Latex particle clumping", "UV light reaction"], correct: "Enzyme converts substrate into colored product" },
+        { q: "Q123. Immunofluorescence requires antibodies linked to:", a: ["Radioactive iodine", "Latex particles", "Cell syncytia membrane", "Fluorophore"], correct: "Fluorophore" },
+        { q: "Q124. Key step for swab specimen transport:", a: ["Leave open to air", "Dry in box", "Put in conservation medium", "Wash with alcohol"], correct: "Put in conservation medium" },
+        { q: "Q126. Essential elements for life provided by microbes:", a: ["Calcium & phosphorus", "Oxygen & nitrogen", "Hydrogen & carbon", "CO₂ & helium"], correct: "Oxygen & nitrogen" },
+        { q: "Q127. Complex carbohydrate not digestible by humans:", a: ["Cellulose", "Glucose", "Glycogen", "Starch"], correct: "Cellulose" },
+        { q: "Q128. 1875–1918 in microbiology was:", a: ["Microscope invention period", "Golden era of pathogen discovery", "DNA engineering era", "Smallpox eradication era"], correct: "Golden era of pathogen discovery" },
+        { q: "Q129. Civilization using yeast fermentation:", a: ["Romans", "Mesopotamians", "Greeks", "Egyptians"], correct: "Egyptians" },
+        { q: "Q130. Bioremediation is:", a: ["Gene injection in plants", "Fermentation of milk", "Using bacteria to break down pollutants", "Engineering human hormones"], correct: "Using bacteria to break down pollutants" },
+        { q: "Q131: What medical product is produced via genetic engineering by inserting a gene?", a: ["Acid Hydroxybutyric", "Cellulose for headsets", "Insulin hormone", "PCBs"], correct: "Insulin hormone" },
+        { q: "Q132: Why are bacteria excellent model organisms?", a: ["Fast growth, simple, cheap culture", "Complex nucleus", "Cannot copy DNA", "Multicellular organisms"], correct: "Fast growth, simple, cheap culture" },
+        { q: "Q133: Main difference between Bacteria and Archaea cell walls:", a: ["Archaea have chitin/cellulose", "Bacteria lack cell wall", "Archaea have peptidoglycan", "Bacteria have peptidoglycan, Archaea do not"], correct: "Bacteria have peptidoglycan, Archaea do not" },
+        { q: "Q134: Where do Archaea thrive?", a: ["Human RBCs", "Sterile lab only", "Tap water", "Hot springs & high salt water"], correct: "Hot springs & high salt water" },
+        { q: "Q135: Correct scientific naming format:", a: ["Species first", "All caps", "Genus capitalized, species lowercase, italicized", "All lowercase"], correct: "Genus capitalized, species lowercase, italicized" },
+        { q: "Q136: Meaning of “Prokaryotic”:", a: ["Before nucleus", "Protective wall", "Multicellular", "True nucleus"], correct: "Before nucleus" },
+        { q: "Q137: Key feature of prokaryotic cells:", a: ["Large size", "No membrane-bound organelles", "True nucleus", "Mitochondria"], correct: "No membrane-bound organelles" },
+        { q: "Q138: Bacterial reproduction:", a: ["Multicellular transformation", "DNA without division", "Binary fission", "Sexual reproduction"], correct: "Binary fission" },
+        { q: "Q139: Where are bacteria and eukaryotes found?", a: ["Sterile labs only", "Artificial protection only", "Extreme only", "Normal environments"], correct: "Normal environments" },
+        { q: "Q140: Multicellular parasites absorbing nutrients:", a: ["Algae", "Protozoa", "Helminths", "Fungi"], correct: "Helminths" },
+        { q: "Q141: What reduced Bubonic plague deaths?", a: ["Gasoline ban", "Headset invention", "TNT bacteria discovery", "Rats control + antibiotics"], correct: "Rats control + antibiotics" },
+        { q: "Q142: Modern global pandemic:", a: ["1246 plague", "1928 influenza", "AIDS", "Smallpox"], correct: "AIDS" },
+        { q: "Q143: Use of microbial amino acids:", a: ["Toxic solvents", "Plastic production", "Nutritional supplements", "Fuel blends"], correct: "Nutritional supplements" },
+        { q: "Q144: Second word in scientific name represents:", a: ["Species", "Discoverer", "Genus", "Domain"], correct: "Species" },
+        { q: "Q145: Chemical for biodegradable plastics:", a: ["Ethanol", "Peptidoglycan", "Hydroxybutyric acid", "TCE"], correct: "Hydroxybutyric acid" },
+        { q: "Q146: Pollutant degraded by bacteria:", a: ["Peptidoglycan", "Amino acids", "Agarose", "PCBs"], correct: "PCBs" },
+        { q: "Q147: Eukaryotic cell size:", a: ["Same size", "2–20 µm", "Very small", "Random change"], correct: "2–20 µm" },
+        { q: "Q148: Unique to Eukarya:", a: ["DNA", "Cytoplasm", "Cell wall", "Mitochondria"], correct: "Mitochondria" },
+        { q: "Q149: Bacterial cell wall component:", a: ["Cellulose", "Peptidoglycan", "Chitin", "Nuclear lipids"], correct: "Peptidoglycan" },
+        { q: "Q150: Meaning of “coli”:", a: ["Egypt origin", "Colon location", "Scientist name", "Sphere shape"], correct: "Colon location" },
+        { q: "Q151: Why are viruses, viroids, and prions considered infectious agents?", a: ["Have cell wall and mitochondria", "Only infect plants", "Lack cellular structure and cannot replicate independently", "Too large"], correct: "Lack cellular structure and cannot replicate independently" },
+        { q: "Q152: Primary composition of a virus:", a: ["Protein only", "Cell wall + cytoplasm", "Naked RNA only", "Protein coat + nucleic acid"], correct: "Protein coat + nucleic acid" },
+        { q: "Q153: Non-living agent made only of protein:", a: ["Prions", "Viruses", "Protozoa", "Viroids"], correct: "Prions" },
+        { q: "Q154: Spherical bacteria are called:", a: ["Spirochete", "Coccus", "Bacillus", "Vibrio"], correct: "Coccus" },
+        { q: "Q155: Vibrio shape:", a: ["Square", "Oval cylinder", "Spiral chain", "Curved rod"], correct: "Curved rod" },
+        { q: "Q156: Chain-forming cocci prefix:", a: ["Strepto-", "Sarcina-", "Diplo-", "Staphylo-"], correct: "Strepto-" },
+        { q: "Q157: Function of plasma membrane:", a: ["Open doorway", "Stores chromosomes", "Synthesizes peptidoglycan", "Controls entry/exit"], correct: "Controls entry/exit" },
+        { q: "Q158: Membrane model:", a: ["Rigid wall", "Active system", "Lock and key", "Fluid mosaic"], correct: "Fluid mosaic" },
+        { q: "Q159: Passive transport (high → low):", a: ["Efflux pumping", "Group translocation", "Simple diffusion", "Active transport"], correct: "Simple diffusion" },
+        { q: "Q160: Gram-positive wall feature:", a: ["No wall", "Thick peptidoglycan", "Thin peptidoglycan + outer membrane", "LPS outer membrane"], correct: "Thick peptidoglycan" },
+        { q: "Q161: Endotoxin component:", a: ["Permeases", "LPS", "Porins", "Teichoic acid"], correct: "LPS" },
+        { q: "Q162: Function of ribosomes:", a: ["DNA storage", "ATP production", "Protein synthesis", "Phosphate storage"], correct: "Protein synthesis" },
+        { q: "Q163: Heat-resistant structure:", a: ["Plasmid", "Capsule", "Endospore", "Flagellum"], correct: "Endospore" },
+        { q: "Q164: Flagellum protein:", a: ["Flagellin", "Pilin", "Porin", "Peptidoglycan"], correct: "Flagellin" },
+        { q: "Q165: Single flagellum at one pole:", a: ["Amphitrichous", "Monotrichous", "Lophotrichous", "Peritrichous"], correct: "Monotrichous" },
+        { q: "Q166: Function of fimbriae:", a: ["Lipid synthesis", "Storage", "Attachment", "Movement"], correct: "Attachment" },
+        { q: "Q167: DNA transfer structure:", a: ["Flagellum", "Sex pilus", "Capsule", "Ribosome"], correct: "Sex pilus" },
+        { q: "Q168: Gel-like outer layer:", a: ["Capsule", "Periplasm", "Slime layer", "Endospore"], correct: "Slime layer" },
+        { q: "Q169: Prokaryotic chromosome:", a: ["Circular DNA in nucleoid", "RNA only", "No chromosome", "Linear DNA in nucleus"], correct: "Circular DNA in nucleoid" },
+        { q: "Q170: Plasmids are:", a: ["Protein storage", "Photosynthetic structures", "Extra-chromosomal circular DNA", "Flagellar units"], correct: "Extra-chromosomal circular DNA" },
+        { q: "Q171: Structure used for buoyancy in aquatic prokaryotes:", a: ["Storage granules", "Gas vesicles", "Endospores", "Ribosomes"], correct: "Gas vesicles" },
+        { q: "Q172: Process that destroys all microorganisms including spores:", a: ["Sterilization", "Antisepsis", "Disinfection", "Pasteurization"], correct: "Sterilization" },
+        { q: "Q173: Difference between disinfectant and antiseptic:", a: ["Antiseptics kill spores", "Disinfectants only food industry", "Disinfectants physical, antiseptics chemical", "Disinfectants used on objects, antiseptics on living tissue"], correct: "Disinfectants used on objects, antiseptics on living tissue" },
+        { q: "Q174: Most resistant microbial structure:", a: ["Bacterial endospores", "Fungal spores", "Vegetative cells", "Enveloped viruses"], correct: "Bacterial endospores" },
+        { q: "Q175: Autoclave standard conditions:", a: ["100°C 0 psi 5 min", "160°C 50 psi 2 hrs", "72°C 10 psi 15 sec", "121°C 15 psi 15 min"], correct: "121°C 15 psi 15 min" },
+        { q: "Q176: Why dry heat needs higher temperature?", a: ["Cells swell with water", "Only capsules affected", "Water conducts heat better", "Vacuum environment"], correct: "Water conducts heat better" },
+        { q: "Q177: Non-ionizing radiation used in hospitals:", a: ["Microwaves", "UV light", "Gamma rays", "X-rays"], correct: "UV light" },
+        { q: "Q178: Alcohol antimicrobial mechanism:", a: ["Oxygen blockage", "Calcium coating", "DNA mutation", "Lipid dissolution + protein denaturation"], correct: "Lipid dissolution + protein denaturation" },
+        { q: "Q179: Gas used for heat-sensitive sterilization:", a: ["Nitrogen dioxide", "Chlorine gas", "CO₂", "Ethylene oxide"], correct: "Ethylene oxide" },
+        { q: "Q180: Glutaraldehyde mechanism:", a: ["Cross-links proteins & nucleic acids", "Heavy metal precipitation", "Capsule rupture", "Iodine radicals"], correct: "Cross-links proteins & nucleic acids" },
+        { q: "Q181: Two main microbial control methods:", a: ["Temperature & nutrients", "Antibiotics & genes", "Physical & chemical methods", "Biological & chemical"], correct: "Physical & chemical methods" },
+        { q: "Q182: Physical method:", a: ["Chemical use", "Heat and radiation", "Heavy metals", "Toxic gas"], correct: "Heat and radiation" },
+        { q: "Q183: Mechanical physical control:", a: ["Removal/washing", "Incineration", "Antibiotics", "Chemicals"], correct: "Removal/washing" },
+        { q: "Q184: Two types of heat:", a: ["Atmospheric & subzero", "Radiant & chemical", "Boiling & freezing", "Moist heat & dry heat"], correct: "Moist heat & dry heat" },
+        { q: "Q185: Physical removal method:", a: ["Filtration/sifting", "Chemical rinsing", "Radiation", "Autoclaving"], correct: "Filtration/sifting" },
+        { q: "Q186: Most resistant bacterial structure:", a: ["Fungal spores", "Endospores", "Flagella", "Yeast cells"], correct: "Endospores" },
+        { q: "Q187: Goal of preservation:", a: ["Destroy all microbes", "Remove refrigerators", "Increase fermentation", "Prevent microbial spoilage"], correct: "Prevent microbial spoilage" },
+        { q: "Q188: Chemical method example:", a: ["UV radiation", "Chemical compounds", "Hot water washing", "Filtration"], correct: "Chemical compounds" },
+        { q: "Q189: Why choose antimicrobial method carefully:", a: ["Plastics never damaged", "All microbes same response", "Physical banned", "Depends on microbe & material"], correct: "Depends on microbe & material" },
+        { q: "Q190: Sterilization without heat uses:", a: ["Amino acids", "Radiation waves", "Cellulose filters", "Boiling water"], correct: "Radiation waves" },
+        { q: "Q191: Which heat type is more effective at lower temperature due to better protein breakdown?", a: ["Moist heat", "Dry heat", "Ambient temperature", "Freezing temperature"], correct: "Moist heat" },
+        { q: "Q192: Industrial example of dry heat sterilization:", a: ["Boiling water bath", "Incineration / burning", "Autoclaving", "Filtration"], correct: "Incineration / burning" },
+        { q: "Q193: Why consider material type in antimicrobial methods?", a: ["Microbes live only on metal", "Some materials melt or react to heat/chemicals", "Chemicals need melted surfaces", "All materials resist heat"], correct: "Some materials melt or react to heat/chemicals" },
+        { q: "Q194: Main effect of radiation on microbes:", a: ["Increases reproduction", "Freezes cytoplasm", "Provides nutrients", "Destroys and eliminates microbes"], correct: "Destroys and eliminates microbes" },
+        { q: "Q195: Heat-sensitive sterilization method:", a: ["Boiling", "Filtration", "Incineration", "Dry oven"], correct: "Filtration" },
+        { q: "Q196: Main goal of chemical method:", a: ["Extract nutrients", "Increase temperature", "Destroy microbes using chemicals", "Build plastic cases"], correct: "Destroy microbes using chemicals" },
+        { q: "Q197: Example of washing/removal method:", a: ["Sun drying tools", "Gene insertion", "Heavy metal gas", "Washing hands/tools"], correct: "Washing hands/tools" },
+        { q: "Q198: Why are endospores hard to kill?", a: ["They melt in cold", "No cell wall", "High resistance to heat/chemicals", "They swim away"], correct: "High resistance to heat/chemicals" },
+        { q: "Q199: Complete destruction of all microbial life is called:", a: ["Preservation", "Pasteurization", "Sanitization", "Sterilization"], correct: "Sterilization" },
+        { q: "Q200: Chemical cleaning of non-living surfaces uses:", a: ["Hormones", "Disinfectants", "Intestinal flora", "Amino acids"], correct: "Disinfectants" },
+        { q: "Q201: Main vulnerability of vaccines/vitamin solutions:", a: ["Turn into plastic", "Grow flagella", "Immune to chemicals", "Denature by heat"], correct: "Denature by heat" },
+        { q: "Q202: Definition of taxonomy:", a: ["Growing bacteria in extremes", "Classification of organisms", "Immune study", "Chemical manufacturing"], correct: "Classification of organisms" },
+        { q: "Q203: Three components of taxonomy:", a: ["Bacteria, Archaea, Eukarya", "Genotype, phenotype, stereotype", "Boiling, autoclaving, baking", "Identification, classification, nomenclature"], correct: "Identification, classification, nomenclature" },
+        { q: "Q204: Classification involves:", a: ["Random naming", "DNA extraction only", "Sorting organisms into groups", "Melting cell walls"], correct: "Sorting organisms into groups" },
+        { q: "Q205: Phenotypic identification method:", a: ["PCR", "rRNA sequencing", "Metabolic and fatty acid analysis", "Gene cloning"], correct: "Metabolic and fatty acid analysis" },
+        { q: "Q206: Genotypic identification method:", a: ["PCR / rRNA sequencing", "Cell size measurement", "Flagella movement", "Colony color"], correct: "PCR / rRNA sequencing" },
+        { q: "Q207: “Escherichia” represents:", a: ["Species", "Domain", "Kingdom", "Genus"], correct: "Genus" },
+        { q: "Q208: Yersinia pestis is:", a: ["Spherical Gram +", "Spiral Gram variable", "Short rod Gram negative", "Filament acid fast"], correct: "Short rod Gram negative" },
+        { q: "Q209: Disease caused by Vibrio cholerae:", a: ["Acne", "Tuberculosis", "Cholera (severe diarrhea)", "Meningitis"], correct: "Cholera (severe diarrhea)" },
+        { q: "Q210: Importance of identification in taxonomy:", a: ["Converts cells", "Eliminates scientific names", "Learns characteristics before grouping", "Destroys cell wall"], correct: "Learns characteristics before grouping" },
+        { q: "Q211: Fundamental lowest taxonomic unit:", a: ["Species", "Genus", "Kingdom", "Domain"], correct: "Species" },
+        { q: "Q212: Disease caused by Yersinia pestis:", a: ["Tuberculosis", "Meningitis", "The plague", "Cholera"], correct: "The plague" },
+        { q: "Q213: Shape of Vibrio cholerae:", a: ["Square", "Spiral", "Sphere", "Comma-shaped"], correct: "Comma-shaped" },
+        { q: "Q214: Testing metabolic differences is:", a: ["None", "Phenotype method", "Antibiotic resistance", "Genotype method"], correct: "Phenotype method" },
+        { q: "Q215: Tuberculosis bacterium:", a: ["Neisseria meningitidis", "E. coli", "Staphylococcus aureus", "Mycobacterium tuberculosis"], correct: "Mycobacterium tuberculosis" },
+        { q: "Q216: Gram stain determines:", a: ["Flagella length", "DNA count", "Cell wall staining", "Division rate"], correct: "Cell wall staining" },
+        { q: "Q217: Genotypic method example:", a: ["Sugar fermentation", "PCR", "Fatty acid analysis", "Microscopic shape"], correct: "PCR" },
+        { q: "Q218: Why hierarchical taxonomy is used:", a: ["Random grouping", "From broad to specific organization", "Remove Latin names", "Create unique domains"], correct: "From broad to specific organization" },
+        { q: "Q219: PCR is paired with:", a: ["Iodine staining", "Incineration", "Membrane separation", "rRNA sequencing"], correct: "rRNA sequencing" },
+        { q: "Q220: Chemotroph energy source:", a: ["Sunlight", "Parasites", "Chemical compounds → ATP", "Heat absorption"], correct: "Chemical compounds → ATP" },
+        { q: "Q221: Phototroph energy source:", a: ["Heavy metals", "Sunlight", "Radiation decay", "Amino acids"], correct: "Sunlight" },
+        { q: "Q222: Types of phototrophs:", a: ["Gram types", "Boiling/freezing", "Intestinal/blood", "Oxygenic & anoxygenic"], correct: "Oxygenic & anoxygenic" },
+        { q: "Q223: Enterobacteriaceae ferment:", a: ["Peptidoglycan", "Chitin", "Glucose", "Cellulose"], correct: "Glucose" },
+        { q: "Q224: Enteric bacteria location:", a: ["Metal tables", "Intestines", "Volcano springs", "Air"], correct: "Intestines" },
+        { q: "Q225: Enteric bacterium group includes:", a: ["E. coli", "Treponema pallidum", "Mycobacterium tuberculosis", "Staphylococcus aureus"], correct: "E. coli" },
+        { q: "Q226: Shigella causes:", a: ["Meningitis", "Dysentery", "Typhoid", "TB"], correct: "Dysentery" },
+        { q: "Q227: Typhoid fever agent:", a: ["Klebsiella pneumoniae", "Proteus vulgaris", "Corynebacterium", "Salmonella Typhi"], correct: "Salmonella Typhi" },
+        { q: "Q228: Test for strain differences in enteric bacteria:", a: ["Serological tests", "Autoclave pressure", "Dry heat", "PCR only"], correct: "Serological tests" }
+    ];
+
+    let currentQuestion = {};
+
+    function loadRandomQuestion() {
+        // Reset states
+        const feedbackBox = document.getElementById("feedback-box");
+        const nextButton = document.getElementById("next-button");
+        feedbackBox.className = "feedback";
+        feedbackBox.style.display = "none";
+        nextButton.style.display = "none";
+
+        // Pick a random entry
+        const randomIndex = Math.floor(Math.random() * quizData.length);
+        currentQuestion = quizData[randomIndex];
+
+        // Print question text
+        document.getElementById("question-text").innerText = currentQuestion.q;
+
+        // Render shuffled or indexed option buttons
+        const optionsBox = document.getElementById("options-box");
+        optionsBox.innerHTML = "";
+        
+        currentQuestion.a.forEach(option => {
+            const btn = document.createElement("button");
+            btn.className = "option-btn";
+            btn.innerText = option;
+            btn.onclick = () => checkAnswer(option, btn);
+            optionsBox.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selectedOption, clickedButton) {
+        const feedbackBox = document.getElementById("feedback-box");
+        const nextButton = document.getElementById("next-button");
+        const allButtons = document.querySelectorAll(".option-btn");
+
+        // Lock button presses
+        allButtons.forEach(btn => btn.disabled = true);
+
+        if (selectedOption === currentQuestion.correct) {
+            feedbackBox.innerText = "Good!";
+            feedbackBox.className = "feedback good";
+            clickedButton.style.backgroundColor = "#c3e6cb";
+            clickedButton.style.borderColor = "#28a745";
+        } else {
+            feedbackBox.innerText = `Try again. The true answer is: "${currentQuestion.correct}"`;
+            feedbackBox.className = "feedback wrong";
+            clickedButton.style.backgroundColor = "#f5c6cb";
+            clickedButton.style.borderColor = "#dc3545";
+            
+            // Highlight true answer passively
+            allButtons.forEach(btn => {
+                if (btn.innerText === currentQuestion.correct) {
+                    btn.style.backgroundColor = "#c3e6cb";
+                    btn.style.borderColor = "#28a745";
+                }
+            });
+        }
+        nextButton.style.display = "block";
+    }
+
+    // Initialize first load
+    window.onload = loadRandomQuestion;
+</script>
+
+</body>
+</html>
+
