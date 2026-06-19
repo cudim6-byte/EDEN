@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Medical Board Quiz (75 Qs)</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .author-banner {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            background-color: #e9ecef;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 650px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        
+        .quiz-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            max-width: 650px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            font-size: 1.35rem;
+            line-height: 1.5;
+        }
+        
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .option-btn {
+            background-color: #f8f9fa;
+            border: 2px solid #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #495057;
+        }
+        
+        .option-btn:hover:not(:disabled) {
+            background-color: #e9ecef;
+            border-color: #ced4da;
+        }
+        
+        .feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            display: none;
+            font-size: 1.2rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .feedback.correct {
+            display: block;
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .feedback.wrong {
+            display: block;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .next-btn {
+            display: none;
+            margin-top: 20px;
+            width: 100%;
+            padding: 14px;
+            background-color: #2b7a78;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        
+        .next-btn:hover {
+            background-color: #17252a;
+        }
+        
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #f4f6f9;
+            padding-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .points-display {
+            color: #2b7a78;
+            font-weight: bold;
+        }
+        
+        .completion-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .completion-screen h1 {
+            color: #2b7a78;
+        }
+        
+        .restart-btn {
+            margin-top: 20px;
+            padding: 12px 25px;
+            background-color: #2b7a78;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="author-banner">Create by CHHEM UDOM</div>
+
+    <div class="quiz-container" id="quiz-window">
+        <div class="quiz-header">
+            <span>Remaining: <span id="count">75</span> / 75</span>
+            <span class="points-display">Score: <span id="score">0</span> pts</span>
+        </div>
+        <h2 id="question-text">Loading...</h2>
+        <div class="options-container" id="options-box"></div>
+        <div class="feedback" id="feedback-box"></div>
+        <button class="next-btn" id="next-button" onclick="handleNext()">Next Question</button>
+    </div>
+
+    <script>
+        const fullQuestionBank = [{
+            q: "What is the varicose vein?",
+            a: ["Dilatation of arteries", "Dilatation and elongated of vein", "Dilatation, Elongation and Tortuousity", "All above are incorrect"],
+            correct: 2
+        }, {
+            q: "All are the characteristic region of varicose vein:",
+            a: ["Lower limb: calf", "Upper limb", "Head", "Abdominal region"],
+            correct: 0
+        }, {
+            q: "All are the cause of varicose vein, except:",
+            a: ["Long hour of standing", "Obesity", "Pregnancy, family history", "Cancer"],
+            correct: 3
+        }, {
+            q: "The commonest vein which become varicose vein is:",
+            a: ["Short saphenous vein (SSV)", "Long saphenous vein (LSV)", "Perforating vein", "All of vein"],
+            correct: 1
+        }, {
+            q: "The inspection sign of varicose vein are:",
+            a: ["Large visible vein", "Pigmentation", "Ulceration", "All above"],
+            correct: 3
+        }, {
+            q: "Burn classification:",
+            a: ["1st degree, 2nd degree and 3rd degree burn", "1st and 2nd degree burn", "1st degree, 2nd degree, 3rd degree, 4th degree and 5th degree burn", "All above are correct"],
+            correct: 0
+        }, {
+            q: "All are the sign and symptom of 1st degree burn, except:",
+            a: ["Redness", "Dry skin", "Blister", "Peeling skin"],
+            correct: 2
+        }, {
+            q: "Jackson’s theory in burn described:",
+            a: ["Zone of coagulation", "Zone of stasis", "Zone of hyperemia", "All above"],
+            correct: 3
+        }, {
+            q: "The symptoms of 2nd degree burn:",
+            a: ["Dry, no blister and very painful", "Dry, blister and very painful", "Dry, blister and painless", "Moist, blister and very painful"],
+            correct: 3
+        }, {
+            q: "The sensation of the 3rd degree burn is:",
+            a: ["Insensate (no pain)", "Painful", "Very painful", "Incorrect"],
+            correct: 0
+        }, {
+            q: "Body surface area estimation according to Rule of Nine:",
+            a: ["Genital area: 9%", "Right upper extremity: 18%", "Right lower extremity: 9%", "Genital area: 1%"],
+            correct: 3
+        }, {
+            q: "Hypertrophic scar is the complication of, except:",
+            a: ["1st degree burn", "2nd degree burn", "3rd degree burn", "2nd and 3rd degree burn"],
+            correct: 0
+        }, {
+            q: "The 3rd degree burn can be healed by itself:",
+            a: ["Correct", "Not sure", "Wrong", "All above are correct"],
+            correct: 2
+        }, {
+            q: "What is a first degree burn affect?",
+            a: ["Epidermis", "Dermis", "Epidermis and dermis", "Full of thickness skin"],
+            correct: 0
+        }, {
+            q: "What is a second degree burn affect?",
+            a: ["Epidermis", "Epidermis and part of dermis layer", "Full of thickness skin", "All above"],
+            correct: 1
+        }, {
+            q: "What is third degree burn affect?",
+            a: ["Epidermis", "Dermis", "Full of thickness skin", "Incorrect"],
+            correct: 2
+        }, {
+            q: "Mild sunburn damage in which degree of burn?",
+            a: ["Second degree burn", "First degree burn", "Third degree burn", "All incorrect"],
+            correct: 1
+        }, {
+            q: "Arteritis is:",
+            a: ["Inflammation of the walls of arteries", "Inflammation of the walls of venous", "Inflammation of the walls of arteries and vein", "All above are correct"],
+            correct: 0
+        }, {
+            q: "The mains diseases of large and medium vessel of arteritis are:",
+            a: ["Phlebitis or venitis", "Giant cell arteritis and lymphatic", "Giant cell arteritis and Takayasu arteritis", "Giant cell arteritis, Takayasu arteritis and phlebitis"],
+            correct: 2
+        }, {
+            q: "All are the sign and symptom of Giant cell arteritis, except:",
+            a: ["Jaw claudication", "Headache, scalp tenderness", "Loss of vision", "Limping"],
+            correct: 3
+        }, {
+            q: "Complication of arteritis can be fatal is:",
+            a: ["Thrombosis", "Phlebitis", "Thrombophlebitis", "Vasculitis"],
+            correct: 0
+        }, {
+            q: "Symptoms of arteritis is, except:",
+            a: ["Inflammation", "Chronic ulceration", "Limping", "No fever"],
+            correct: 3
+        }, {
+            q: "Complication of giant cell arteritis is:",
+            a: ["Neck necrosis", "Blindness", "Blindness and scalp necrosis", "Leg necrosis"],
+            correct: 2
+        }, {
+            q: "Takayasu’s arteritis affect of:",
+            a: ["Small arteries", "Medium and large arteries", "Long arteries in body", "Incorrect"],
+            correct: 1
+        }, {
+            q: "What is the germ provoking tetanus?",
+            a: ["Clostridium Botulinum", "Clostridium Perfringen", "Clostridium Tetani", "All above are incorrect"],
+            correct: 2
+        }, {
+            q: "All are the characteristic of germ that causes tetanus, except:",
+            a: ["Anaerobic bacilli", "Gram positive", "Spore-forming", "Aerobic bacilli"],
+            correct: 3
+        }, {
+            q: "All are the characteristic of Tetanus, except:",
+            a: ["Infectious and contagious disease", "Infectious but non contagious from person to person", "Caused by germ of Gram positive bacilli", "Have vaccine-prevention"],
+            correct: 0
+        }, {
+            q: "This is the illustration picture of a patient having:",
+            a: ["Epilepsy", "Tetanus", "Hypocalcemia (Low level of blood calcium)", "Novel Corona virus (Wuhan corona virus)"],
+            correct: 1
+        }, {
+            q: "All are symptom tetanus, except:",
+            a: ["Relaxation all muscle", "Muscle spasm", "Stiffness of jaw", "Contraction of facial muscle"],
+            correct: 0
+        }, {
+            q: "Tetanus is an illness characterized by:",
+            a: ["Hypertonia", "Painful muscular contractions", "General muscle spasm", "All above"],
+            correct: 3
+        }, {
+            q: "Deep venous thrombosis (DVT) is:",
+            a: ["Blood clot (thrombus) formation in one or more deep vein in the body", "Blood clot (thrombus) formation in one or more superficial vein in the body", "Blood clot (thrombus) formation in one or more artery in the body", "Blood clot (thrombus) formation in deep and superficial vein in the body"],
+            correct: 0
+        }, {
+            q: "Which group of deep venous most affected by DVT (deep venous thrombosis):",
+            a: ["Lower extremity (Leg)", "Upper extremity", "Vein in the brain", "Vein in the neck"],
+            correct: 0
+        }, {
+            q: "All are the mains categories factors of Vichow’s triad, except:",
+            a: ["Venous stasis", "Endothelial injury", "Hypercoagulation (coagulopathy)", "Artery stasis"],
+            correct: 3
+        }, {
+            q: "The most frequent complication of deep venous thrombosis is:",
+            a: ["Stroke", "Heart attack", "PE (pulmonary embolism)", "Kidney disease"],
+            correct: 2
+        }, {
+            q: "All are symptoms of deep venous thrombosis, except:",
+            a: ["Tenderness", "Warmth", "Swelling", "No swelling"],
+            correct: 3
+        }, {
+            q: "Sign of pulmonary embolism:",
+            a: ["Breathlessness", "Chest pain", "Blooding coughing", "All above"],
+            correct: 3
+        }, {
+            q: "Blood test for study in deep venous thrombosis and pulmonary embolism:",
+            a: ["D-dimer and INR", "Glycemia", "Cholesterolemia", "Hemogram"],
+            correct: 0
+        }, {
+            q: "The x-ray of vein for study deep venous thrombosis:",
+            a: ["Ultrasound of neck", "Venography and MRI", "Arteriography", "Cerebral CT-scan"],
+            correct: 1
+        }, {
+            q: "Stroke is the complication of blood clot in:",
+            a: ["Abdominal", "Leg", "Brain", "Neck"],
+            correct: 2
+        }, {
+            q: "Homan’s sign:",
+            a: ["Pain in posterior calf or knee with force of dorsiflexion of the foot while the knee is fully extended.", "Pain in posterior thigh or knee with force of dorsiflexion of the foot while the knee is fully extended.", "Pain in anterior thigh or knee with force of dorsiflexion of the foot while the knee is fully extended.", "All are incorrect"],
+            correct: 0
+        }, {
+            q: "What is the clinical definition of dysuria?",
+            a: ["The involuntary leakage of urine", "A symptom of pain, burning, stinging, or itching of the urethra or urethral meatus with urination", "An overproduction of urine exceeding 3 liters per day", "Complete cessation of urine production"],
+            correct: 1
+        }, {
+            q: "What physiological mechanism directly triggers the pain felt in dysuria?",
+            a: ["Sudden drops in systemic blood pressure", "Bladder muscle contraction and urethral peristalsis forcing urine against an inflamed mucosal lining", "Rapid filtration of proteins through the glomerulus", "Over-dilation of the renal pelvis"],
+            correct: 1
+        }, {
+            q: "Dysuria can be broadly divided into which two categories of etiologies?",
+            a: ["Acute and Chronic", "Infectious and Noninfectious", "Obstructive and Irritative", "Congenital and Malignant"],
+            correct: 1
+        }, {
+            q: "Which of the following is categorized as an 'Infectious' cause of dysuria?",
+            a: ["Benign Prostatic Hyperplasia (BPH)", "Urinary Tract Infection (such as Cystitis or Pyelonephritis)", "Foreign body in the bladder", "Atrophic vaginitis"],
+            correct: 1
+        }, {
+            q: "Why are Urinary Tract Infections (UTIs), a primary cause of dysuria, more common in females than males?",
+            a: ["Females have higher intra-abdominal pressure", "Females have a shorter and straighter urethra", "Males produce more urine daily", "Males have more pain receptors in the bladder"],
+            correct: 1
+        }, {
+            q: "Pain or discomfort during sexual intercourse, soreness or itching in the vagina, intense urges to urinate and pains in the lower front portion of the abdomen (near the bladder) are the symptoms of:",
+            a: ["Hematuria", "Dysuria", "Hydronephrosis", "Vesico Urethral Reflux"],
+            correct: 1
+        }, {
+            q: "What is the upper UTI of Dysuria?",
+            a: ["Pyelonephritis", "Cystitis", "Urethritis", "Vaginitis"],
+            correct: 0
+        }, {
+            q: "What are non-infectious etiology of Dysuria?",
+            a: ["Urethritis", "Kidney infection", "Trauma", "Skin condition"],
+            correct: 2
+        }, {
+            q: "Which age demographic of men shows an increased prevalence of dysuria, often linked to BPH?",
+            a: ["Men over 50 years old", "Men under 20 years old", "Men between 20 and 35 years old", "Demographic trends are uniform across all ages"],
+            correct: 0
+        }, {
+            q: "When a foreign body or stone causes dysuria, the pain is primarily a result of:",
+            a: ["Direct mechanical irritation and inflammation of the mucosal lining", "Systemic immune suppression", "Bacterial colonization of the kidneys", "Allergic reaction to the stone materials"],
+            correct: 0
+        }, {
+            q: "Which diagnostic test is universally listed as the initial step to evaluate a patient with dysuria?",
+            a: ["Contrast-enhanced CT scan", "Urinalysis and Urine Culture", "Retrograde Cystogram", "Renal Biopsy"],
+            correct: 1
+        }, {
+            q: "In a patient with dysuria, what does the presence of 'Leukocyte Esterase' and 'Nitrites' on a urine dipstick strongly suggest?",
+            a: ["A non-infectious mechanical obstruction", "A bacterial Urinary Tract Infection", "Early-stage renal failure", "Estrogen deficiency"],
+            correct: 1
+        }, {
+            q: "What is the primary focus of treating dysuria?",
+            a: ["Always performing immediate surgery", "Treating the underlying cause (e.g., antibiotics for infections, removing irritants)", "Restricting fluid intake to minimize urination frequency", "Prescribing lifelong hormone replacement therapy"],
+            correct: 1
+        }, {
+            q: "Systemic infections originating from a UTI (Urosepsis) generally carry a __________ prognosis compared to systemic infections of other organ systems.",
+            a: ["Much worse", "Uniformly fatal", "Better", "Identical"],
+            correct: 2
+        }, {
+            q: "What is the clinical definition of Hydronephrosis?",
+            a: ["The bacterial infection of the kidney parenchyma", "The aseptic dilatation of the renal pelvis or calyces accompanied by destruction of kidney parenchyma", "The presence of stones in the distal ureter", "Malignant tumor growth in the urinary bladder"],
+            correct: 1
+        }, {
+            q: "Hydronephrosis can be broadly classified anatomically into which two groups?",
+            a: ["Infectious and Noninfectious", "Unilateral and Bilateral", "Acute and Chronic", "Pre-renal and Post-renal"],
+            correct: 1
+        }, {
+            q: "If an obstruction is located at the Pelviureteric Junction (PUJ), the resulting hydronephrosis will typically be:",
+            a: ["Bilateral", "Unilateral", "Absent", "Located only in the bladder"],
+            correct: 1
+        }, {
+            q: "Which of the following is categorized as an 'Intramural' cause of unilateral hydronephrosis?",
+            a: ["A stone in the renal pelvis", "Congenital PUJ obstruction or a ureterocele", "A sloughed papilla from papillary necrosis", "External pressure from aberrant blood vessels"],
+            correct: 1
+        }, {
+            q: "Which of the following is categorized as an 'Intraluminal' cause of unilateral hydronephrosis?",
+            a: ["Neoplasm of the ureter", "A stone in the renal pelvis or a sloughed papilla", "Stricture of the ureter following pelvic surgery", "Retroperitoneal fibrosis"],
+            correct: 1
+        }, {
+            q: "Bilateral hydronephrosis is fundamentally caused by an obstruction located at or below which level?",
+            a: ["The single kidney hilum", "The upper third of one ureter", "The bladder neck or urethra", "The major calyx"],
+            correct: 2
+        }, {
+            q: "Which of the following is an 'acquired' cause of bilateral hydronephrosis?",
+            a: ["Posterior urethral valves (PUV)", "Congenital urethral stricture", "Benign Prostatic Hyperplasia (BPH) or carcinoma of the cervix", "Phimosis present at birth"],
+            correct: 2
+        }, {
+            q: "What type of hydronephrosis layout accounts for approximately 20% of cases as listed under the classification slide?",
+            a: ["Extrarenal pelvic hydronephrosis", "Intrarenal pelvic hydronephrosis", "Bilateral total hydronephrosis", "Idiopathic lower pole hydronephrosis"],
+            correct: 1
+        }, {
+            q: "What is a common clinical symptom of acute hydronephrosis?",
+            a: ["Painless visible jaundice", "Severe flank or back pain (renal colic)", "Gradual, symptomless weight gain", "Increased hearing sensitivity"],
+            correct: 1
+        }, {
+            q: "In long-standing, slowly progressive chronic hydronephrosis, the condition can often be:",
+            a: ["Asymptomatic or present as a dull, dragging ache", "Highly contagious", "Accompanied by an immediate high fever", "Characterized by a sudden loss of vision"],
+            correct: 0
+        }, {
+            q: "Which diagnostic test is crucial to assess kidney function indicators like creatinine and Blood Urea Nitrogen (BUN)?",
+            a: ["Urine Culture", "Blood Test", "Plain KUB X-ray", "Transrectal Ultrasound"],
+            correct: 1
+        }, {
+            q: "A complete blood count (CBC) is performed during hydronephrosis evaluation primarily to determine:",
+            a: ["The patient's blood type", "Whether a systemic or localized infection is present", "The presence of stone crystals", "The precise grade of a structural block"],
+            correct: 1
+        }, {
+            q: "Which initial imaging modality is widely used to visualize the dilatation of the renal pelvis and calyces at the bedside?",
+            a: ["MRI", "Ultrasound", "CT Tractography", "Barium Enema"],
+            correct: 1
+        }, {
+            q: "What does 'IVU' stand for in the context of urological imaging diagnostic procedures?",
+            a: ["Intravenous Urography", "Intrarenal Vascular Ultrasound", "Internal Voiding Unit", "Interstitial Volume Update"],
+            correct: 0
+        }, {
+            q: "Which of the following imaging modalities provides the highest cross-sectional detail to find the exact anatomical cause of a block?",
+            a: ["Plain Abdominal X-ray", "CT Scan", "Chest Ultrasound", "Single-film IVP"],
+            correct: 1
+        }, {
+            q: "What is the primary focus of medical or surgical treatment for hydronephrosis?",
+            a: ["To permanently remove both kidneys", "To relieve the obstruction and drain the backed-up urine to preserve function", "Restricting all fluid intake to prevent kidney expansion", "Administering chronic heavy sedation"],
+            correct: 1
+        }, {
+            q: "Which surgical intervention uses externally generated shock waves to clear an intraluminal stone cause?",
+            a: ["PCNL", "Shock wave lithotripsy (ESWL)", "Open pyelolithotomy", "Rigid Ureteroscopy"],
+            correct: 1
+        }, {
+            q: "What serious long-term complication can occur if hydronephrosis is left completely untreated?",
+            a: ["Enhanced lung compliance", "Permanent kidney damage or end-stage kidney failure", "Sudden bone density increase", "Chronic hair loss"],
+            correct: 1
+        }, {
+            q: "If both kidneys are severely damaged by bilateral hydronephrosis to the point of failure, the patient will ultimately require:",
+            a: ["Antibiotics only", "Dialysis or a kidney transplant", "Strict bed rest for life", "No specific medical intervention"],
+            correct: 1
+        }, {
+            q: "A urine sample is analyzed to verify the presence of:",
+            a: ["Hormones and vitamins", "Blood, stone crystals, or bacteria/infection", "High levels of insulin", "Heavy metals"],
+            correct: 1
+        }, {
+            q: "What are the signs and symptoms of Hydronephrosis?",
+            a: ["Burning with urination", "Hematuria", "A weak urine stream", "Bladder pain"],
+            correct: 1
+        }, {
+            q: "What is the diagnosis of physical examination of Hydronephrosis?",
+            a: ["Urine Test", "Anamnesis, history", "Blood test", "Imaging procedure"],
+            correct: 1
+        }, {
+            q: "If a child is with UTI, what signs and symptoms may he has?",
+            a: ["Pyrexia", "Malodorous urine", "Hematuria", "Chills"],
+            correct: 0
+        }, {
+            q: "What are the common causes of Hematuria in the ages of 60 years?",
+            a: ["BPH", "Bladder tumor", "Congenital UT anomalies with obstruction and acute glomerulonephritis.", "Acute UTI"],
+            correct: 1
+        }, {
+            q: "What are the diagnoses of Hematuria history?",
+            a: ["Age, sex and smoking", "Pain, fever, dysuria, frequency", "Occupational exposure to carcinogens and history of schistomiasis in endemic areas", "All of above"],
+            correct: 3
+        }, {
+            q: "What is the lower UTI of Dysuria?",
+            a: ["Cystitis", "Urethritis", "Vaginitis", "All of above"],
+            correct: 3
+        }, {
+            q: "What are the congenital causes of bilateral Hydronephrosis?",
+            a: ["Congenital of stricture of external urethral meatus, pinhole meatus.", "Carcinoma cervix", "Carcinoma bladder neck scarring", "Congenital posterior urethral valve."],
+            correct: 3
+        }, {
+            q: "What is the clinical definition of hematuria?",
+            a: ["The presence of glucose in the urine", "The presence of blood in the urine", "An infection of the renal pelvis", "A decrease in urine production"],
+            correct: 1
+        }, {
+            q: "Which type of hematuria is visible to the naked eyes, changing the urine to a red or tea color?",
+            a: ["Microscopic hematuria", "Macroscopic (Gross) hematuria", "Asymptomatic isolated hematuria", "Terminal microscopic hematuria"],
+            correct: 1
+        }, {
+            q: "Which type of hematuria is not visible to the naked eyes?",
+            a: ["Microscopic hematuria", "Macroscopic (Gross) hematuria", "Asymptomatic isolated hematuria", "Terminal microscopic hematuria"],
+            correct: 0
+        }, {
+            q: " 'Microscopic' hematuria can be sub-divided into which categories?",
+            a: ["Acute and Chronic", "Symptomatic and Asymptomatic (with proteinuria or isolated)", "Infectious and Malignant", "Traumatic and Postoperative"],
+            correct: 1
+        }, {
+            q: "What diagnostic assessment involves collecting urine at different stages of a single void to help localize the source of bleeding?",
+            a: ["Three-glass test", "Dipstick test only", "24-hour urine collection", "Clean-catch midstream test"],
+            correct: 0
+        }, {
+            q: "What type of hematuria is characterized by the presence of blood only at the start of urination?",
+            a: ["Initial", "Terminal", "Total", "Microscopic"],
+            correct: 0
+        }, {
+            q: "What type of hematuria is characterized by the presence of blood only at the end of urination?",
+            a: ["Initial", "Terminal", "Total", "Microscopic"],
+            correct: 1
+        }, {
+            q: "What type of hematuria is characterized by the presence of blood throughout of entire duration of urination?",
+            a: ["Initial", "Terminal", "Total", "Microscopic"],
+            correct: 2
+        }, {
+            q: "If blood is found predominantly in the 'Initial' glass during a three-glass test, the source of bleeding is most likely in the:",
+            a: ["Upper tract (Kidneys)", "Bladder dome", "Urethra", "Ureters"],
+            correct: 2
+        }, {
+            q: "If blood appears primarily in the 'Terminal' glass of a three-glass test, the source is likely near the:",
+            a: ["Kidneys", "Bladder neck or prostate", "Upper ureter", "Renal pyramid"],
+            correct: 1
+        }, {
+            q: " 'Total' hematuria (blood mixed evenly throughout all three glasses) generally indicates a pathology in the:",
+            a: ["Anterior urethra only", "Urethral meatus", "Kidneys, ureters, or bladder", "Contralateral adrenal gland"],
+            correct: 2
+        }, {
+            q: "Causes of hematuria are broadly categorized into which two clinical groups?",
+            a: ["Anatomical and Structural", "Medical and Urological", "Congenital and Genetic", "Intermittent and Continuous"],
+            correct: 1
+        }, {
+            q: "Which of the following is listed as a 'Urological' cause of hematuria?",
+            a: ["Glomerulonephritis", "Cancer of the bladder, kidney, or prostate", "IgA Nephropathy", "Diabetic nephropathy"],
+            correct: 1
+        }, {
+            q: "Which parasitic infection is explicitly noted as a potential cause of urological hematuria?",
+            a: ["Malaria", "Schistosomiasis", "Giardiasis", "Ascariasis"],
+            correct: 1
+        }, {
+            q: "Which of the following is a recognized risk factor for significant urological disease in patients presenting with microscopic hematuria?",
+            a: ["Age under 20 years", "History of smoking", "High dietary calcium intake", "Low-protein diet"],
+            correct: 1
+        }, {
+            q: "What common non-malignant prostate condition can cause urological hematuria in older men?",
+            a: ["Prostatic atrophy", "Benign Prostatic Hyperplasia (BPH)", "Congenital prostatic cyst", "Acute orchitis"],
+            correct: 1
+        }, {
+            q: "Which initial, non-invasive imaging modality is used to screen for urinary tract neoplasms, stone disease, or obstructions?",
+            a: ["Chest X-ray", "Abdominal/Pelvic Ultrasonography", "Brain (MRI)", "Bone scan"],
+            correct: 1
+        }, {
+            q: "If hematuria is caused by a standard bacterial Urinary Tract Infection (UTI), what is the primary treatment?",
+            a: ["Surgical resection of the bladder", "Antibiotics", "Radiation therapy", "Absolute restriction of oral fluids"],
+            correct: 1
+        }, {
+            q: "Management of hematuria should fundamentally be directed by:",
+            a: ["The patient's age alone", "The underlying cause (e.g., stone, cancer, trauma, infection)", "The choice of pain medication", "The type of catheter used"],
+            correct: 1
+        }, {
+            q: "What are the common causes of Hematuria in the ages of 20 – 40 years?",
+            a: ["Acute glomerulonephritis", "Bladder cancer", "Congenital UT anomalies with obstruction", "Acute UTI and Stones"],
+            correct: 3
+        }, {
+            q: "What are signs and symptoms of Hematuria in adults?",
+            a: ["Burning", "Feed poorly", "Dysuria", "Be grumpy"],
+            correct: 2
+        }, {
+            q: "What is the clinical definition of Vesicoureteral Reflux (VUR)?",
+            a: ["The formation of stones within the bladder cavity", "The abnormal retrograde flow of urine from the bladder up into the ureters and kidneys", "An acute bacterial infection confined strictly to the urethra", "Structural narrowing of the urethral lumen due to scarring"],
+            correct: 1
+        }, {
+            q: "What is the fundamental cause of 'Primary' VUR?",
+            a: ["High pressure inside the bladder from a urethral obstruction", "A congenital developmental defect of the ureterovesical junction (UVJ) valve mechanism", "Structural compression caused by a pelvic tumor", "A severe traumatic injury to the lower abdomen"],
+            correct: 1
+        }, {
+            q: "What can cause 'Secondary' VUR to develop?",
+            a: ["A short course of oral antibiotics", "Abnormally high intravesical pressure from a functional or structural obstruction, such as neurogenic bladder or PUV", "Drinking insufficient amounts of water during infancy", "A simple primary fracture of the pelvic bone"],
+            correct: 1
+        }, {
+            q: "By what ages can VUR spontaneously disappear due to growth and development?",
+            a: ["By 6 months for both males and females", "Around 2 years for males and 4 years for females", "Only after puberty reaches full completion at age 18", "It never disappears spontaneously and always requires surgery"],
+            correct: 1
+        }, {
+            q: "What is the most common clinical manifestation or presentation that leads to the evaluation of VUR in children?",
+            a: ["Jaundice and liver failure", "Recurrent Urinary Tract Infections (UTIs) or Pyelonephritis", "Sudden onset of a severe skin rash", "Chronic bone pain in the lower limbs"],
+            correct: 1
+        }, {
+            q: "Which diagnostic imaging modality is standard for formally evaluating, grading, and identifying the presence of VUR?",
+            a: ["Plain Abdominal X-ray (KUB)", "Voiding Cystourethrography (VCUG)", "MRI of the brain", "Chest Ultrasonography"],
+            correct: 1
+        }, {
+            q: "In the International Grading System for VUR, how many distinct grades of reflux are defined?",
+            a: ["3 grades", "5 grades", "7 grades", "10 grades"],
+            correct: 1
+        }, {
+            q: "Which grade of VUR involves reflux into the ureter only, without any dilation of the upper urinary tract?",
+            a: ["Grade I", "Grade II", "Grade III", "Grade IV"],
+            correct: 0
+        }, {
+            q: "Grade II VUR is characterized by retrograde flow into the:",
+            a: ["Ureter only, failing to reach the renal pelvis", "Ureter, pelvis, and calyces without dilation or changes in the fornices", "Bladder walls exclusively", "Urethra during the storage phase"],
+            correct: 1
+        }, {
+            q: "What structural changes distinguish Grade III VUR from lower grades?",
+            a: ["The complete absence of urine flow", "Mild to moderate dilation of the ureter and renal pelvis, with minimal or no blunting of the calyces", "Massive tortuosity and severe dilation of the entire system", "Complete destruction and loss of the contralateral kidney"],
+            correct: 1
+        }, {
+            q: "Which grade of VUR features moderate dilation and/or tortuosity of the ureter with complete obliteration of the sharp angle of the fornices?",
+            a: ["Grade I", "Grade III", "Grade IV", "Grade II"],
+            correct: 2
+        }, {
+            q: "Grade V VUR, the most severe classification, is characterized by:",
+            a: ["Reflux that only reaches the lower third of the ureter", "Gross dilation and tortuosity of the ureter, severe dilation of the renal pelvis and calyces, and loss of papillary impressions", "The spontaneous healing of the valve mechanism", "Infection limited entirely to the urethral meatus"],
+            correct: 1
+        }, {
+            q: "What is the primary initial approach for managing low-grade, asymptomatic Primary VUR in infants?",
+            a: ["Immediate total nephrectomy", "Watchful waiting, close follow-up, and sometimes prophylactic antibiotics to prevent UTIs as the child grows", "Emergency open abdominal surgery within 24 hours", "Strict permanent restriction of all fluid intake"],
+            correct: 1
+        }];
+
+        let activePool = [...fullQuestionBank];
+        let currentQuestion = null;
+        let pointsScore = 0;
+
+        function loadQuestion() {
+            if (activePool.length === 0) {
+                showCompletionScreen();
+                return;
+            }
+
+            const feedbackBox = document.getElementById('feedback-box');
+            const nextButton = document.getElementById('next-button');
+            const optionsBox = document.getElementById('options-box');
+
+            feedbackBox.className = "feedback";
+            feedbackBox.style.display = "none";
+            nextButton.style.display = "none";
+            optionsBox.innerHTML = "";
+
+            document.getElementById('count').innerText = activePool.length;
+
+            const randomIndex = Math.floor(Math.random() * activePool.length);
+            currentQuestion = activePool[randomIndex];
+
+            document.getElementById('question-text').innerText = currentQuestion.q;
+
+            currentQuestion.a.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = "option-btn";
+                button.innerText = option;
+                button.onclick = () => checkAnswer(index, button);
+                optionsBox.appendChild(button);
+            });
+        }
+
+        function checkAnswer(selectedIndex, clickedButton) {
+            const feedbackBox = document.getElementById('feedback-box');
+            const nextButton = document.getElementById('next-button');
+            const optionsBox = document.getElementById('options-box');
+
+            const buttons = optionsBox.getElementsByClassName('option-btn');
+            for (let btn of buttons) {
+                btn.disabled = true;
+            }
+
+            if (selectedIndex === currentQuestion.correct) {
+                clickedButton.style.borderColor = "#28a745";
+                clickedButton.style.backgroundColor = "#e8f5e9";
+                feedbackBox.innerText = "good job";
+                feedbackBox.className = "feedback correct";
+                nextButton.style.display = "block";
+
+                // 1 question = 1 point
+                pointsScore += 1;
+                document.getElementById('score').innerText = pointsScore;
+            } else {
+                clickedButton.style.borderColor = "#dc3545";
+                clickedButton.style.backgroundColor = "#fdf2f2";
+                feedbackBox.innerText = "try again";
+                feedbackBox.className = "feedback wrong";
+
+                // -1 point for a wrong answer
+                pointsScore -= 1;
+                document.getElementById('score').innerText = pointsScore;
+
+                setTimeout(() => {
+                    loadQuestion();
+                }, 1500);
+            }
+        }
+
+        function handleNext() {
+            activePool = activePool.filter(item => item.q !== currentQuestion.q);
+            loadQuestion();
+        }
+
+        function showCompletionScreen() {
+            const container = document.getElementById('quiz-window');
+            container.innerHTML = `
+        <div class="completion-screen">
+            <h1>🎉 Quiz Completed!</h1>
+            <p>You went through all 75 questions.</p>
+            <h2>Final Score: <span style="color:#2b7a78">${pointsScore}</span> points</h2>
+            <button class="restart-btn" onclick="restartQuiz()">Play Again</button>
+        </div>
+    `;
+        }
+
+        function restartQuiz() {
+            location.reload();
+        }
+
+        loadQuestion();
+    </script>
+
+</body>
+
+</html>
